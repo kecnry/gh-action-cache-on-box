@@ -70,3 +70,11 @@ jobs:
       run: |
         echo "Downloaded files:"
         ls -la downloads/ || echo "No files downloaded"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: astroquery-downloads
+        path: downloads/
+        retention-days: 30
+        if-no-files-found: warn
