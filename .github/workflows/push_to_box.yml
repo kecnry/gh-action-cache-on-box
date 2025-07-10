@@ -1,0 +1,29 @@
+
+name: Upload Test File to Box
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload-to-box:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Generate test file
+      run: |
+        echo "This is a test file generated at $(date)" > test.txt
+        echo "Workflow run ID: ${{ github.run_id }}" >> test.txt
+        echo "Repository: ${{ github.repository }}" >> test.txt
+        echo "Actor: ${{ github.actor }}" >> test.txt
+        cat test.txt
+        
+    - name: Upload to Box
+      uses: benjaminejarrell/box-upload-gh-actions@v1.2
+      id: BoxUpload
+      with:
+        box-client-sdk-config: ${{ secrets.BOX_CLIENT_SDK_CONFIG }}
+        box-folder-id: 330196801536
+        file: test.txt
