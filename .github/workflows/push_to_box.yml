@@ -27,3 +27,4 @@ jobs:
         box-client-sdk-config: ${{ secrets.BOX_CLIENT_SDK_CONFIG }}
         box-folder-id: 330196801536
         file: test.txt
+        destination-filename: test.txt
