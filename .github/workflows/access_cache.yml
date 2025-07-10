@@ -44,7 +44,7 @@ jobs:
       run: |
         cat > download_script.py << 'EOF'
         import os
-        from astroquery.mast import MastMissions
+        from astroquery.mast import MastMissions, Observations
         
         # Get URIs from environment variable
         uris_input = os.environ.get('URIS')
@@ -62,8 +62,14 @@ jobs:
                 mast.download_file(full_uri, local_path='./', cache=True)
             except Exception as e:
                 print(f'Error processing {uri}: {e}')
-                continue
-        
+
+            observations_uri = f'mast:jwst/product/{full_uri}'
+            print(f'\nObservations.download_file {observations_uri}')
+            try:
+                Observations.download_file(observations_uri, local_path='./', cache=True)
+            except Exception as e:
+                print(f'Error downloading {observations_uri}: {e}')
+
         print('\nDownload process completed!')
         EOF
 
