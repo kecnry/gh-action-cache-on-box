@@ -26,13 +26,23 @@ jobs:
         python -m pip install --upgrade pip
         pip install astroquery
 
+    - name: Get date components for cache key
+      id: date
+      run: |
+        echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
+        echo "week=$(date +'%V')" >> $GITHUB_OUTPUT
+        echo "day=$(date +'%j')" >> $GITHUB_OUTPUT
+        
     - name: Restore cache
       id: cache-restore
       uses: actions/cache/restore@v4
       with:
         path: ./
-        key: mast-cache-${{ github.run_number }}
+        key: mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-${{ github.run_number }}
         restore-keys: |
+          mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-
+          mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-
+          mast-cache-${{ steps.date.outputs.year }}-
           mast-cache-
 
     - name: List files

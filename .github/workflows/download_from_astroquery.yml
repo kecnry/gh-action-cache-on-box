@@ -44,7 +44,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install astroquery
-        
+
+    - name: Get date components for cache key
+      id: date
+      run: |
+        echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
+        echo "week=$(date +'%V')" >> $GITHUB_OUTPUT
+        echo "day=$(date +'%j')" >> $GITHUB_OUTPUT
+
     - name: Create download script
       run: |
         cat > download_script.py << 'EOF'
@@ -66,8 +73,9 @@ jobs:
 
             if mission.upper().startswith('HLSP'):
                 # For HLSP, use Observations to download
+                # in this case, the "mission" should be the full string between "mast:" and the filename
                 observations_uri = f'mast:{mission}/{uri}'
-                print(f'Observations.download_file {observations_uri}')
+                print(f'Observations.download_file({observations_uri})')
                 try:
                     Observations.download_file(observations_uri, local_path='./', cache=True)
                 except Exception as e:
@@ -75,13 +83,13 @@ jobs:
             else:
                 # For other missions, use MastMissions to download
                 missions_uri = '_'.join(uri.split('_')[:3])+'/'+uri
-                print(f"mast.download_file {missions_uri}")
+                print(f"mast.download_file({missions_uri})")
                 try:
                     mast.download_file(missions_uri, local_path='./', cache=False)
                 except Exception as e:
                     print(f'Error processing {uri}: {e}')
 
-        print('\nDownload process completed!')
+        print('\nDownloads completed!')
         EOF
 
     - name: Restore existing cache
@@ -90,8 +98,11 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./
-        key: mast-cache
+        key: mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-${{ github.run_number }}
         restore-keys: |
+          mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}
+          mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-
+          mast-cache-${{ steps.date.outputs.year }}-
           mast-cache-
           
     - name: Run download script
@@ -109,6 +120,6 @@ jobs:
       uses: actions/cache/save@v4
       if: always()
       with:
-        key: mast-cache-${{ github.run_number }}
+        key: mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-${{ github.run_number }}
         path: ./
         enableCrossOsArchive: true
