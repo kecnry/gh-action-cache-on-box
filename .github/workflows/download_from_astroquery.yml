@@ -75,7 +75,7 @@ jobs:
                 # For HLSP, use Observations to download
                 # in this case, the "mission" should be the full string between "mast:" and the filename
                 observations_uri = f'mast:{mission}/{uri}'
-                print(f'Observations.download_file({observations_uri})')
+                print(f'Observations.download_file(\'{observations_uri}\')')
                 try:
                     Observations.download_file(observations_uri, local_path='./', cache=True)
                 except Exception as e:
@@ -83,7 +83,7 @@ jobs:
             else:
                 # For other missions, use MastMissions to download
                 missions_uri = '_'.join(uri.split('_')[:3])+'/'+uri
-                print(f"mast.download_file({missions_uri})")
+                print(f"mast.download_file(\'{missions_uri}\')")
                 try:
                     mast.download_file(missions_uri, local_path='./', cache=False)
                 except Exception as e:
@@ -118,7 +118,6 @@ jobs:
         
     - name: Save updated cache (overwrite)
       uses: actions/cache/save@v4
-      if: always()
       with:
         key: mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-${{ github.run_number }}
         path: ./
