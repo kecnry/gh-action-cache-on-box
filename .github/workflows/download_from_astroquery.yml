@@ -49,7 +49,7 @@ jobs:
             print(f'\nProcessing URI {i+1}/{len(uris)}: {uri}')
             
             try:
-                mast.download_file(full_uri, local_path='./')                       
+                mast.download_file(full_uri, local_path='./', cache=False)
             except Exception as e:
                 print(f'Error processing {uri}: {e}')
                 continue
@@ -57,20 +57,30 @@ jobs:
         print('\nDownload process completed!')
         EOF
 
+    - name: Restore existing cache
+      id: cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ./
+        key: mast-cache
+        restore-keys: |
+          mast-cache-
+          
     - name: Run download script
       run: |
         python download_script.py
       env:
         URIS: ${{ inputs.uris }}
         
-    - name: List downloaded files
+    - name: List cached files
       run: |
-        echo "Downloaded files:"
-        ls -la downloads/ || echo "No files downloaded"
-
-    - name: Cache MAST files
-      uses: actions/cache@v4
+        echo "All cached files:"
+        ls -ls *.fits || echo "No files found"
+        
+    - name: Save updated cache (overwrite)
+      uses: actions/cache/save@v4
+      if: always()
       with:
-        key: mast-cache
+        key: mast-cache-${{ github.run_number }}
         path: ./
         enableCrossOsArchive: true
