@@ -11,7 +11,7 @@ on:
       uris:
         description: 'List of files to download (comma-separated in format mission:filename)'
         required: false
-        default: 'hlsp:hlsp_jades_jwst_nirspec_goods-n-mediumhst-00000804_clear-prism_v1.0_s2d.fits,
+        default: 'HLSP/jades/dr3/goods-n/spectra/clear-prism/goods-n-mediumhst:hlsp_jades_jwst_nirspec_goods-n-mediumhst-00000804_clear-prism_v1.0_s2d.fits,
                   hst:hst_17183_02_wfc3_uvis_g280_iexr02mt_flt.fits,
                   hst:hst_16968_01_acs_wfc_f606w_jezz01l3_flt.fits,
                   hst:jclj01010_drz.fits,
@@ -49,7 +49,7 @@ jobs:
       run: |
         cat > download_script.py << 'EOF'
         import os
-        from astroquery.mast import MastMissions
+        from astroquery.mast import MastMissions, Observations
         
         # Get URIs from environment variable
         uris_input = os.environ.get('URIS')
@@ -60,17 +60,27 @@ jobs:
 
         for i, uri in enumerate(uris):
             mission, uri = uri.split(':')
-            full_uri = '_'.join(uri.split('_')[:3])+'/'+uri
             mast.mission = mission
 
             print(f'\nProcessing URI {i+1}/{len(uris)}: {uri} (mission={mission})')
-            
-            try:
-                mast.download_file(full_uri, local_path='./', cache=False)
-            except Exception as e:
-                print(f'Error processing {uri}: {e}')
-                continue
-        
+
+            if mission.upper().startswith('HLSP'):
+                # For HLSP, use Observations to download
+                observations_uri = f'mast:{mission}/{uri}'
+                print(f'Observations.download_file {observations_uri}')
+                try:
+                    Observations.download_file(observations_uri, local_path='./', cache=True)
+                except Exception as e:
+                    print(f'Error downloading {observations_uri}: {e}')
+            else:
+                # For other missions, use MastMissions to download
+                missions_uri = '_'.join(uri.split('_')[:3])+'/'+uri
+                print(f"mast.download_file {missions_uri}")
+                try:
+                    mast.download_file(missions_uri, local_path='./', cache=False)
+                except Exception as e:
+                    print(f'Error processing {uri}: {e}')
+
         print('\nDownload process completed!')
         EOF
 
