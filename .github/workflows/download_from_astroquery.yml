@@ -101,7 +101,7 @@ jobs:
 
     - name: Restore existing cache
       id: cache-restore
-      if: ${{ inputs.append_to_cache || github.event_name == 'schedule' }}
+      if: ${{ inputs.append_to_cache }}
       uses: actions/cache/restore@v4
       with:
         path: ./
