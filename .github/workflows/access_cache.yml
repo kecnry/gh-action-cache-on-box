@@ -4,12 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       uris:
-        description: 'List of URIs to access (comma-separated)'
+        description: 'List of files to download (comma-separated in format mission:filename)'
         required: false
-        default: 'jw02732004001_02103_00004_mirifushort_x1d.fits,
-                  jw01538160001_16101_00004_nrs1_s2d.fits,
-                  jw02727-o002_t062_nircam_clear-f090w_i2d.fits,
-                  jw02732004001_02103_00004_mirifushort_s3d.fits'
+        default: 'hlsp:hlsp_jades_jwst_nirspec_goods-n-mediumhst-00000804_clear-prism_v1.0_s2d.fits,
+                  hst:hst_17183_02_wfc3_uvis_g280_iexr02mt_flt.fits,
+                  jwst:jw02732004001_02103_00004_mirifushort_s3d.fits'
         type: string
 
 jobs:
@@ -55,15 +54,17 @@ jobs:
         mast.mission = 'jwst'
 
         for i, uri in enumerate(uris):
+            mission, uri = uri.split(':')
             full_uri = '_'.join(uri.split('_')[:3])+'/'+uri
             print(f'\nProcessing URI {i+1}/{len(uris)}: {uri}')
-            
+
+            mast.mission = mission
             try:
                 mast.download_file(full_uri, local_path='./', cache=True)
             except Exception as e:
                 print(f'Error processing {uri}: {e}')
 
-            observations_uri = f'mast:jwst/product/{full_uri}'
+            observations_uri = f'mast:{mission}/product/{full_uri}'
             print(f'\nObservations.download_file {observations_uri}')
             try:
                 Observations.download_file(observations_uri, local_path='./', cache=True)

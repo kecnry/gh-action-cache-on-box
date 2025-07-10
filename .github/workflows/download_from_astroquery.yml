@@ -9,7 +9,7 @@ on:
         default: false
         type: boolean
       uris:
-        description: 'List of URIs to download (comma-separated)'
+        description: 'List of files to download (comma-separated in format mission:filename)'
         required: false
         default: 'hlsp:hlsp_jades_jwst_nirspec_goods-n-mediumhst-00000804_clear-prism_v1.0_s2d.fits,
                   hst:hst_17183_02_wfc3_uvis_g280_iexr02mt_flt.fits,
