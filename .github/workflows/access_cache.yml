@@ -26,7 +26,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install astroquery
 
-    - name: Get date components for cache key
+    - name: Get components for cache key
       id: date
       run: |
         echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
@@ -38,7 +38,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./
-        key: mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-${{ github.run_number }}
+        key: use-restore-keys-below-to-match-in-priority-order
         restore-keys: |
           mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-${{ steps.date.outputs.day }}-
           mast-cache-${{ steps.date.outputs.year }}-${{ steps.date.outputs.week }}-
