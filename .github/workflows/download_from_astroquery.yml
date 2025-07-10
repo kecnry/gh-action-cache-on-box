@@ -40,9 +40,6 @@ jobs:
         uris_input = os.environ.get('URIS')
         uris = [uri.strip() for uri in uris_input.split(',')]
         
-        # Create output directory
-        os.makedirs('downloads', exist_ok=True)
-        
         # Initialize MAST missions
         mast = MastMissions()
         mast.mission = 'jwst'
@@ -52,7 +49,7 @@ jobs:
             print(f'\nProcessing URI {i+1}/{len(uris)}: {uri}')
             
             try:
-                mast.download_file(full_uri, local_path='downloads')                       
+                mast.download_file(full_uri, local_path='./')                       
             except Exception as e:
                 print(f'Error processing {uri}: {e}')
                 continue
@@ -71,10 +68,9 @@ jobs:
         echo "Downloaded files:"
         ls -la downloads/ || echo "No files downloaded"
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+    - name: Cache MAST files
+      uses: actions/cache@v4
       with:
-        name: astroquery-downloads
-        path: downloads/
-        retention-days: 30
-        if-no-files-found: warn
+        key: mast-cache
+        path: ./
+        enableCrossOsArchive: true
