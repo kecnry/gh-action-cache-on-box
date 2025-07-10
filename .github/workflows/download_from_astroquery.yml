@@ -1,0 +1,72 @@
+name: Download from Astroquery
+
+on:
+  workflow_dispatch:
+    inputs:
+      uris:
+        description: 'List of URIs to download (comma-separated)'
+        required: false
+        default: 'jw02732004001_02103_00004_mirifushort_x1d.fits,
+                  jw01538160001_16101_00004_nrs1_s2d.fits,
+                  jw02727-o002_t062_nircam_clear-f090w_i2d.fits,
+                  jw02732004001_02103_00004_mirifushort_s3d.fits'
+        type: string
+
+jobs:
+  download-astroquery:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install astroquery
+        
+    - name: Create download script
+      run: |
+        cat > download_script.py << 'EOF'
+        import os
+        from astroquery.mast import MastMissions
+        
+        # Get URIs from environment variable
+        uris_input = os.environ.get('URIS')
+        uris = [uri.strip() for uri in uris_input.split(',')]
+        
+        # Create output directory
+        os.makedirs('downloads', exist_ok=True)
+        
+        # Initialize MAST missions
+        mast = MastMissions()
+        mast.mission = 'jwst'
+
+        for i, uri in enumerate(uris):
+            full_uri = '_'.join(uri.split('_')[:3])+'/'+uri
+            print(f'\nProcessing URI {i+1}/{len(uris)}: {uri}')
+            
+            try:
+                mast.download_file(full_uri, local_path='downloads')                       
+            except Exception as e:
+                print(f'Error processing {uri}: {e}')
+                continue
+        
+        print('\nDownload process completed!')
+        EOF
+
+    - name: Run download script
+      run: |
+        python download_script.py
+      env:
+        URIS: ${{ inputs.uris }}
+        
+    - name: List downloaded files
+      run: |
+        echo "Downloaded files:"
+        ls -la downloads/ || echo "No files downloaded"
