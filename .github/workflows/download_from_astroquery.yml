@@ -3,6 +3,11 @@ name: Download from Astroquery
 on:
   workflow_dispatch:
     inputs:
+      append_to_cache:
+        description: 'Append to latest cache?'
+        required: false
+        default: false
+        type: boolean
       uris:
         description: 'List of URIs to download (comma-separated)'
         required: false
@@ -50,7 +55,7 @@ jobs:
         
         # Initialize MAST missions
         mast = MastMissions()
-        missions = {'jw': 'jwst', 'hs': 'hst}
+        missions = {'jw': 'jwst', 'hs': 'hst'}
 
         for i, uri in enumerate(uris):
             full_uri = '_'.join(uri.split('_')[:3])+'/'+uri
@@ -70,6 +75,7 @@ jobs:
 
     - name: Restore existing cache
       id: cache-restore
+      if: ${{ inputs.append_to_cache }}
       uses: actions/cache/restore@v4
       with:
         path: ./
