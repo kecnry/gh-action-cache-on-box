@@ -1,0 +1,23 @@
+name: Access Cached MAST Files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  access-cache:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Restore cache
+      id: cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ./
+        key: mast-cache
+          
+    - name: List files
+      run: |
+        ls -la || echo "No files found"
