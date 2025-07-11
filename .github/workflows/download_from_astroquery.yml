@@ -29,8 +29,6 @@ on:
                   jwst:jw02732004001_02103_00004_mirifushort_s3d.fits,
                   jwst:jw02732004001_02103_00004_mirifushort_x1d.fits'
         type: string
-  schedule:
-    - cron: '0 6 * * 0'  # Every Sunday at 6 AM UTC
 
 jobs:
   download-astroquery:
